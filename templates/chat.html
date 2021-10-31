@@ -99,7 +99,7 @@
         document.getElementById('messages').appendChild(newNode);
     });
 
-    socket.on("send_image", function(data){
+    socket.on("image_upload", function(data){
             appendImageMessage(data)
         })
 
