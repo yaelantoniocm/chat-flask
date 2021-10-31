@@ -51,6 +51,7 @@
                         image: arrayBuffer,
                         message: message
                     });
+                    document.getElementById('files').value = '';
                     console.log("se mandó la imágen");
                 }
             }
@@ -100,13 +101,13 @@
     });
 
     socket.on("image_upload", function(data){
-            appendImageMessage(data)
+            appendImageMessage(data);
         })
 
     function createImageMessageDOM(data) {
         var img = document.createElement("img");
         img.src = data.binary;
-        img.style.width = '20%';
+        img.style.width = '100%';
         console.log("Se agregó la imágen al DOM");
     }
 
@@ -116,7 +117,6 @@
         document.getElementById('messages').appendChild(newNode);
         document.getElementById('messages').appendChild(createImageMessageDOM(data));
         console.log("Se agregó la imágen al feed");
-        document.getElementById('files').value = '';
     }
 
 </script>
