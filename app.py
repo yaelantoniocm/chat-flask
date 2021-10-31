@@ -29,7 +29,6 @@ def handle_send_message_event(data):
                                                                     data['message']))
     socketio.emit('receive_message', data, room=data['room'])
 
-
 @socketio.on('join_room')
 def handle_join_room_event(data):
     app.logger.info("{} se unio a la sala {}".format(data['username'], data['room']))
