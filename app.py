@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room
+from flask_cors import CORS
 
 app = Flask(__name__)
-socketio = SocketIO(app)
-
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=None)
 
 @app.route('/')
 def home():
