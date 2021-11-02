@@ -6,7 +6,7 @@
 </head>
 <body>
 <h1>Welcome to chat room {{ room }}</h1>
-
+Usuarios en línea: <p id="textboxid">{{ personas_en_linea }}</p>
 <div id="messages"></div>
 
 <form id="message_input_form">
@@ -17,6 +17,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js" charset="utf-8"></script>
 <script>
     const socket = io.connect("http://127.0.0.1:5000");
+    let personas_conectadas = "{{ personas_en_linea }}";
 
     socket.on('connect', function () {
         socket.emit('join_room', {
@@ -52,7 +53,11 @@
         if (data.username !== "{{ username }}") {
             const newNode = document.createElement('div');
             newNode.innerHTML = `<b>${data.username}</b> ha entrado a la sala`;
+            personas_conectadas++;
             document.getElementById('messages').appendChild(newNode);
+            var txtBox = document.getElementById("textboxid");
+            txtBox.innerHTML = personas_conectadas;
+            txtBox.value = personas_conectadas;
         }
     });
     //Se manda alerta de que se salio.
@@ -61,6 +66,10 @@
         const newNode = document.createElement('div');
         newNode.innerHTML = `<b>${data.username}</b> ha abandonado la sala`;
         document.getElementById('messages').appendChild(newNode);
+        personas_conectadas--;
+        var txtBox = document.getElementById("textboxid");
+        txtBox.innerHTML = personas_conectadas;
+        txtBox.value = personas_conectadas;
     });
 </script>
 </html>
