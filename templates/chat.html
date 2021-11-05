@@ -6,7 +6,7 @@
 </head>
 <body>
 <h1>Welcome to chat room {{ room }}</h1>
-
+Usuarios en línea: <p id="textboxid">{{ personas_en_linea }}</p>
 <div id="messages"></div>
 
 <form id="message_input_form">
@@ -18,6 +18,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js" integrity="sha512-zN6KYOtONNTOGXz0RkWX2EpavN9VdIs+2w+To+fhciFv83YA9maUpi2lzZWrOfKXdFIZZomWufBznkyHi3a8oQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
     const socket = io.connect("http://127.0.0.1:5000");
+    let personas_conectadas = "{{ personas_en_linea }}";
 
     socket.on('connect', function () {
         socket.emit('join_room', {
@@ -59,14 +60,6 @@
             message_input.focus();
         }
     });
-
-    window.onbeforeunload = function () {
-        socket.emit('leave_room', {
-            username: "{{ username }}",
-            room: "{{ room }}"
-        })
-    };
-
     socket.on('receive_message', function (data) {
         console.log(data);
         const newNode = document.createElement('div');
@@ -83,21 +76,29 @@
             document.getElementById('messages').appendChild(newNode);
         }
     });
-
+    //Se manda alerta de que se unio a la sala
     socket.on('join_room_announcement', function (data) {
         console.log(data);
         if (data.username !== "{{ username }}") {
             const newNode = document.createElement('div');
             newNode.innerHTML = `<b>${data.username}</b> ha entrado a la sala`;
+            personas_conectadas++;
             document.getElementById('messages').appendChild(newNode);
+            var txtBox = document.getElementById("textboxid");
+            txtBox.innerHTML = personas_conectadas;
+            txtBox.value = personas_conectadas;
         }
     });
-
+    //Se manda alerta de que se salio.
     socket.on('leave_room_announcement', function (data) {
         console.log(data);
         const newNode = document.createElement('div');
-        newNode.innerHTML = `<b>${data.username}</b> ha dejado la sala`;
+        newNode.innerHTML = `<b>${data.username}</b> ha abandonado la sala`;
         document.getElementById('messages').appendChild(newNode);
+        personas_conectadas--;
+        var txtBox = document.getElementById("textboxid");
+        txtBox.innerHTML = personas_conectadas;
+        txtBox.value = personas_conectadas;
     });
 
     socket.on("image_upload", function(data){
