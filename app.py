@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room
+from flask_cors import CORS
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=None)
 personas_en_linea = 0
 
 @app.route('/')
@@ -27,6 +29,15 @@ def handle_send_message_event(data):
                                                                     data['room'],
                                                                     data['message']))
     socketio.emit('receive_message', data, room=data['room'])
+
+@socketio.on('image_upload')
+def imageUpload(data):
+    app.logger.info("{} mando una imágen a la sala {}: {}, {} bytes".format(data['username'],
+                                                                data['filename'],
+                                                                data['type'],
+                                                                data['size']))
+    socketio.emit('send-image', data, room=data['room'])
+
 
 #Se manda alerta de que se unio a la sala en la consola
 @socketio.on('join_room')

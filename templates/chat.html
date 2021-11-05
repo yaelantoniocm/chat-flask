@@ -11,10 +11,11 @@ Usuarios en línea: <p id="textboxid">{{ personas_en_linea }}</p>
 
 <form id="message_input_form">
     <input type="text" id="message_input" placeholder="Escriba aquí su mensaje">
+    <input type="file" id="files" accept="image/*" />
     <button type="submit">Send</button>
 </form>
 </body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js" integrity="sha512-zN6KYOtONNTOGXz0RkWX2EpavN9VdIs+2w+To+fhciFv83YA9maUpi2lzZWrOfKXdFIZZomWufBznkyHi3a8oQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
     const socket = io.connect("http://127.0.0.1:5000");
     let personas_conectadas = "{{ personas_en_linea }}";
@@ -30,12 +31,30 @@ Usuarios en línea: <p id="textboxid">{{ personas_en_linea }}</p>
         document.getElementById('message_input_form').onsubmit = function (e) {
             e.preventDefault();
             let message = message_input.value.trim();
-            if (message.length) {
+            if (message.length && document.getElementById('files').files.length == 0) {
                 socket.emit('send_message', {
                     username: "{{ username }}",
                     room: "{{ room }}",
                     message: message
                 })
+            } else if (message.length || document.getElementById('files').files.length > 0) { 
+                console.log("intentando mandar imagen");
+                var fileReader = new FileReader();
+                fileReader.readAsDataURL(document.getElementById('files').files[0]);
+                fileReader.onload = () => {
+                    var arrayBuffer = fileReader.result; 
+                    socket.emit('image_upload', { 
+                        username: "{{ username }}",
+                        room: "{{ room }}",
+                        filename: document.getElementById('files').files[0].name, 
+                        type: document.getElementById('files').files[0].type, 
+                        size: document.getElementById('files').files[0].size, 
+                        image: arrayBuffer,
+                        message: message
+                    });
+                    document.getElementById('files').value = '';
+                    console.log("se mandó la imágen");
+                }
             }
             message_input.value = '';
             message_input.focus();
@@ -44,8 +63,18 @@ Usuarios en línea: <p id="textboxid">{{ personas_en_linea }}</p>
     socket.on('receive_message', function (data) {
         console.log(data);
         const newNode = document.createElement('div');
-        newNode.innerHTML = `<b>${data.username}:&nbsp;</b> ${data.message}`;
-        document.getElementById('messages').appendChild(newNode);
+        if (data.image && data.message) {
+            newNode.innerHTML = `<b>${data.username}:&nbsp;</b> ${data.message}`;
+            appendImageMessage(data.image);
+            document.getElementById('messages').appendChild(newNode);
+        } else if (data.image) {
+            newNode.innerHTML = `<b>${data.username}:</b>`;
+            appendImageMessage(data.image);
+            document.getElementById('messages').appendChild(newNode);
+        } else {
+            newNode.innerHTML = `<b>${data.username}:&nbsp;</b> ${data.message}`;
+            document.getElementById('messages').appendChild(newNode);
+        }
     });
     //Se manda alerta de que se unio a la sala
     socket.on('join_room_announcement', function (data) {
@@ -71,6 +100,26 @@ Usuarios en línea: <p id="textboxid">{{ personas_en_linea }}</p>
         txtBox.innerHTML = personas_conectadas;
         txtBox.value = personas_conectadas;
     });
+
+    socket.on("image_upload", function(data){
+            appendImageMessage(data);
+        })
+
+    function createImageMessageDOM(data) {
+        var img = document.createElement("img");
+        img.src = data.binary;
+        img.style.width = '100%';
+        console.log("Se agregó la imágen al DOM");
+    }
+
+    function appendImageMessage(data) {
+        const newNode = document.createElement('div');
+        newNode.innerHTML = `<b>${data.username}:&nbsp;</b>`;
+        document.getElementById('messages').appendChild(newNode);
+        document.getElementById('messages').appendChild(createImageMessageDOM(data));
+        console.log("Se agregó la imágen al feed");
+    }
+
 </script>
 </html>
 </html>
