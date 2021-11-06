@@ -12,7 +12,7 @@
             socket.emit('join_room', {
                 username: "{{ username }}",
                 room: "{{ room }}"
-            });
+            });        
     
             let message_input = document.getElementById('message_input');
     
@@ -50,6 +50,13 @@
                 message_input.focus();
             }
         });
+        socket.on("disconnect", () => { 
+            socket.emit('leave_room', {
+                username: "{{ username }}",
+                room: "{{ room }}"
+            });
+            personas_conectadas--;
+        });
         socket.on('receive_message', function (data) {
             console.log(data);
             const newNode = document.createElement('div');
@@ -69,15 +76,13 @@
         //Se manda alerta de que se unio a la sala
         socket.on('join_room_announcement', function (data) {
             console.log(data);
-            if (data.username !== "{{ username }}") {
-                const newNode = document.createElement('div');
-                newNode.innerHTML = `<b>${data.username}</b> ha entrado a la sala`;
-                personas_conectadas++;
-                document.getElementById('messages').appendChild(newNode);
-                var txtBox = document.getElementById("textboxid");
-                txtBox.innerHTML = personas_conectadas;
-                txtBox.value = personas_conectadas;
-            }
+            const newNode = document.createElement('div');
+            newNode.innerHTML = `<b>${data.username}</b> ha entrado a la sala`;
+            personas_conectadas++;
+            document.getElementById('messages').appendChild(newNode);
+            var txtBox = document.getElementById("textboxid");
+            txtBox.innerHTML = personas_conectadas;
+            txtBox.value = personas_conectadas;
         });
         //Se manda alerta de que se salio.
         socket.on('leave_room_announcement', function (data) {
@@ -97,6 +102,7 @@
             img.src = data.image;
             img.style.maxWidth = '30vh';
             img.style.maxHeight = '30vh';
+            img.style.border = '1px solid grey';
             img.alt = data.filename;
             console.log("Se agregó la imágen al DOM");
             return img
@@ -107,6 +113,9 @@
             document.getElementById('messages').appendChild(createImageMessageDOM(data));
             console.log("Se agregó la imágen al feed");
         }
+
+
+
     </script>
 </head>
 <body>
