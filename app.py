@@ -25,19 +25,19 @@ def chat():
 
 @socketio.on('send_message')
 def handle_send_message_event(data):
-    app.logger.info("{} mando un mensaje a la sala {}: {}".format(data['username'],
-                                                                    data['room'],
-                                                                    data['message']))
+    app.logger.info("{} mando un mensaje a la sala {}: {}".format(
+        data['username'],
+        data['room'],
+        data['message']))
+    if data['image'] != '':
+        app.logger.info("{} mandó una imágen a la sala {}: {}, {}, {}, {} bytes".format(
+            data['username'],
+            data['room'],
+            data['message'],
+            data['filename'],
+            data['type'],
+            data['size']))
     socketio.emit('receive_message', data, room=data['room'])
-
-@socketio.on('image_upload')
-def imageUpload(data):
-    app.logger.info("{} mando una imágen a la sala {}: {}, {} bytes".format(data['username'],
-                                                                data['filename'],
-                                                                data['type'],
-                                                                data['size']))
-    socketio.emit('send-image', data, room=data['room'])
-
 
 #Se manda alerta de que se unio a la sala en la consola
 @socketio.on('join_room')
