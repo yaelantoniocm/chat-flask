@@ -60,7 +60,8 @@
                     appendImageMessage(data);
                 }
             } else if (data.image) { 
-                newNode.innerHTML = `<b>${data.username}:&nbsp;</b>`;
+                newNode.innerHTML = `<b>${data.username}:&nbsp;</b>${data.filename}`;
+                document.getElementById('messages').appendChild(newNode);
                 appendImageMessage(data);
             }
 
@@ -94,7 +95,8 @@
         function createImageMessageDOM(data) {
             var img = document.createElement("img");
             img.src = data.image;
-            img.style.maxWidth = '20vh';
+            img.style.maxWidth = '30vh';
+            img.style.maxHeight = '30vh';
             img.alt = data.filename;
             console.log("Se agregó la imágen al DOM");
             return img
