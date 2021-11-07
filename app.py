@@ -6,6 +6,7 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode=None)
 personas_en_linea = 0
+data_temp = []
 
 @app.route('/')
 def home():
@@ -43,19 +44,22 @@ def handle_send_message_event(data):
 @socketio.on('join_room')
 def handle_join_room_event(data):
     global personas_en_linea
+    global data_temp
+    data_temp = data
     personas_en_linea += 1
     app.logger.info("{} se unio a la sala {}".format(data['username'], data['room']))
     join_room(data['room'])
     socketio.emit('join_room_announcement', data, room=data['room'], personas_en_linea=personas_en_linea)
 
-#Se manda alerta de que se salio la sala en la consola
-@socketio.on('leave_room')
-def handle_leave_room_event(data):
+@socketio.on('disconnect')
+def test_disconnect():
     global personas_en_linea
+    global data_temp
+    data = data_temp
     personas_en_linea -= 1
-    app.logger.info("{} a dejado la sala {}".format(data['username'], data['room']))
+    app.logger.info("{} ha dejado la sala {}".format(data['username'], data['room']))
     leave_room(data['room'])
-    socketio.emit('leave_room_announcement', data, room=data['room'])
+    socketio.emit('leave_room_announcement', data, room=data['room'], personas_en_linea=personas_en_linea)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

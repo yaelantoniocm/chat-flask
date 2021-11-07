@@ -55,7 +55,6 @@
                 username: "{{ username }}",
                 room: "{{ room }}"
             });
-            personas_conectadas--;
         });
         socket.on('receive_message', function (data) {
             console.log(data);
